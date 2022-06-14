@@ -1,0 +1,37 @@
+#!/bin/bash
+
+set -e
+
+helm_cmd="${HELM_COMMAND:-helm}"
+
+chart=$1
+
+if [ -z "$1" ]; then
+  echo 'please provide a chart to package'
+  exit 1
+fi
+
+version=$(grep version "$chart/Chart.yaml" | awk '{ print $2 }')
+version="${version%\"}"
+version="${version#\"}"
+
+echo "testing $chart:$version"
+
+bin/test "$chart"
+
+echo "packaging $chart:$version"
+
+${helm_cmd} package -d docs/ $chart
+
+${helm_cmd} repo index docs
+
+git add "$chart/Chart.yaml"
+git add "docs/$chart-$version.tgz"
+git add docs/index.yaml
+
+git commit -m "$chart $version package"
+
+git tag --force "$chart-v$version"
+
+echo '
+you can now git push origin master --tags'
