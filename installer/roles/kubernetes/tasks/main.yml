@@ -249,7 +249,7 @@
     - "{{ secret }}"
     - "{{ deployment }}"
     - "{{ supervisor }}"
-  no_log: true
+#  no_log: true
 
 - name: Delete any existing management pod
   shell: |
