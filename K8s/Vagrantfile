@@ -67,8 +67,5 @@ Vagrant.configure("2") do |config|
     sed -i 's/mirrorlist/#mirrorlist/g' /etc/yum.repos.d/CentOS-*
     sed -i 's|#baseurl=http://mirror.centos.org|baseurl=http://vault.centos.org|g' /etc/yum.repos.d/CentOS-*
     yum -y install git python3 python3-pip
-    pip install --upgrade pip
-    pip3 install --user Rust setuptools_rust
-    pip3 install --user ansible
   SHELL
 end
