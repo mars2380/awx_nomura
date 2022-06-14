@@ -1,0 +1,3 @@
+[submodule "chart"]
+	path = chart
+	url = https://github.com/AdWerx/charts.git
