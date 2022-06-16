@@ -251,70 +251,70 @@
     - "{{ supervisor }}"
 #  no_log: true
 
-- name: Delete any existing management pod
-  shell: |
-    {{ kubectl_or_oc }} -n {{ kubernetes_namespace }} \
-      delete pod ansible-tower-management --grace-period=0 --ignore-not-found
-
-- name: Template management pod
-  set_fact:
-    management_pod: "{{ lookup('template', 'management-pod.yml.j2') }}"
-
-- name: Create management pod
-  shell: |
-    echo {{ management_pod | quote }} | {{ kubectl_or_oc }} apply -f -
-
-- name: Wait for management pod to start
-  shell: |
-    {{ kubectl_or_oc }} -n {{ kubernetes_namespace }} \
-      get pod ansible-tower-management -o jsonpath="{.status.phase}"
-  register: result
-  until: result.stdout == "Running"
-  retries: 60
-  delay: 10
-
-- name: Migrate database
-  shell: |
-    {{ kubectl_or_oc }} -n {{ kubernetes_namespace }} exec ansible-tower-management -- \
-      bash -c "awx-manage migrate --noinput"
-
-- name: Check for Tower Super users
-  shell: |
-    {{ kubectl_or_oc }} -n {{ kubernetes_namespace }} exec ansible-tower-management -- \
-      bash -c "echo 'from django.contrib.auth.models import User; nsu = User.objects.filter(is_superuser=True).count(); exit(0 if nsu > 0 else 1)' | awx-manage shell"
-  register: super_check
-  ignore_errors: true
-  changed_when: super_check.rc > 0
-
-- name: create django super user if it does not exist
-  shell: |
-    {{ kubectl_or_oc }} -n {{ kubernetes_namespace }} exec ansible-tower-management -- \
-      bash -c "echo \"from django.contrib.auth.models import User; User.objects.create_superuser('{{ admin_user }}', '{{ admin_email }}', '{{ admin_password }}')\" | awx-manage shell"
-  no_log: true
-  when: super_check.rc > 0
-
-- name: update django super user password
-  shell: |
-    {{ kubectl_or_oc }} -n {{ kubernetes_namespace }} exec ansible-tower-management -- \
-      bash -c "awx-manage update_password --username='{{ admin_user }}' --password='{{ admin_password }}'"
-  no_log: true
-  register: result
-  changed_when: "'Password updated' in result.stdout"
-
-- name: Create the default organization if it is needed.
-  shell: |
-    {{ kubectl_or_oc }} -n {{ kubernetes_namespace }} exec ansible-tower-management -- \
-      bash -c "awx-manage create_preload_data"
-  register: cdo
-  changed_when: "'added' in cdo.stdout"
-  when: create_preload_data | bool
-
-- name: Delete management pod
-  shell: |
-    {{ kubectl_or_oc }} -n {{ kubernetes_namespace }} \
-      delete pod ansible-tower-management --grace-period=0 --ignore-not-found
-
-- name: Scale up deployment
-  shell: |
-    {{ kubectl_or_oc }} -n {{ kubernetes_namespace }} \
-      scale {{ deployment_object }} {{ kubernetes_deployment_name }} --replicas={{ replicas | default(kubernetes_deployment_replica_size) }}
+#- name: Template management pod
+#  set_fact:
+#    management_pod: "{{ lookup('template', 'management-pod.yml.j2') }}"
+#- name: Create management pod
+#  shell: |
+#    echo {{ management_pod | quote }} | {{ kubectl_or_oc }} apply -f -
+#
+#  shell: |
+#- name: Delete any existing management pod
+#    {{ kubectl_or_oc }} -n {{ kubernetes_namespace }} \
+#      delete pod ansible-tower-management --grace-period=0 --ignore-not-found
+#
+#
+#- name: Wait for management pod to start
+#  shell: |
+#    {{ kubectl_or_oc }} -n {{ kubernetes_namespace }} \
+#      get pod ansible-tower-management -o jsonpath="{.status.phase}"
+#  register: result
+#  until: result.stdout == "Running"
+#  retries: 60
+#  delay: 10
+#
+#- name: Migrate database
+#  shell: |
+#    {{ kubectl_or_oc }} -n {{ kubernetes_namespace }} exec ansible-tower-management -- \
+#      bash -c "awx-manage migrate --noinput"
+#
+#- name: Check for Tower Super users
+#  shell: |
+#    {{ kubectl_or_oc }} -n {{ kubernetes_namespace }} exec ansible-tower-management -- \
+#      bash -c "echo 'from django.contrib.auth.models import User; nsu = User.objects.filter(is_superuser=True).count(); exit(0 if nsu > 0 else 1)' | awx-manage shell"
+#  register: super_check
+#  ignore_errors: true
+#  changed_when: super_check.rc > 0
+#
+#- name: create django super user if it does not exist
+#  shell: |
+#    {{ kubectl_or_oc }} -n {{ kubernetes_namespace }} exec ansible-tower-management -- \
+#      bash -c "echo \"from django.contrib.auth.models import User; User.objects.create_superuser('{{ admin_user }}', '{{ admin_email }}', '{{ admin_password }}')\" | awx-manage shell"
+#  no_log: true
+#  when: super_check.rc > 0
+#
+#- name: update django super user password
+#  shell: |
+#    {{ kubectl_or_oc }} -n {{ kubernetes_namespace }} exec ansible-tower-management -- \
+#      bash -c "awx-manage update_password --username='{{ admin_user }}' --password='{{ admin_password }}'"
+#  no_log: true
+#  register: result
+#  changed_when: "'Password updated' in result.stdout"
+#
+#- name: Create the default organization if it is needed.
+#  shell: |
+#    {{ kubectl_or_oc }} -n {{ kubernetes_namespace }} exec ansible-tower-management -- \
+#      bash -c "awx-manage create_preload_data"
+#  register: cdo
+#  changed_when: "'added' in cdo.stdout"
+#  when: create_preload_data | bool
+#
+#- name: Delete management pod
+#  shell: |
+#    {{ kubectl_or_oc }} -n {{ kubernetes_namespace }} \
+#      delete pod ansible-tower-management --grace-period=0 --ignore-not-found
+#
+#- name: Scale up deployment
+#  shell: |
+#    {{ kubectl_or_oc }} -n {{ kubernetes_namespace }} \
+#      scale {{ deployment_object }} {{ kubernetes_deployment_name }} --replicas={{ replicas | default(kubernetes_deployment_replica_size) }}
