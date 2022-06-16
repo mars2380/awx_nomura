@@ -1,8 +1,10 @@
+https://github.com/ansible/awx-operator
+
 kubectl apply -f https://raw.githubusercontent.com/ansible/awx-operator/0.12.0/deploy/awx-operator.yaml
 
 kubectl apply -f ./awx-operator.yaml
 
-kubectl apply -f ansible-awx.yml
+kubectl apply -f ./ansible-awx.yml
 kubectl logs -f deployment/awx-operator
 kubectl get pods -l "app.kubernetes.io/managed-by=awx-operator"
 kubectl get svc -l "app.kubernetes.io/managed-by=awx-operator"
@@ -17,3 +19,7 @@ kubectl port-forward svc/ansible-awx-service --address 0.0.0.0 32483:80 &> /dev/
 open http://<minikube-ip>:<node-port>
 
 kubectl get secret ansible-awx-admin-password -o jsonpath="{.data.password}" | base64 --decode
+
+helm repo add awx-operator https://ansible.github.io/awx-operator/
+helm repo update
+helm install my-awx-operator awx-operator/awx-operator
