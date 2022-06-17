@@ -36,4 +36,7 @@ curl -L http://127.0.0.1:8080
 kubectl get secret awx-demo-admin-password -o jsonpath="{.data.password}" | base64 --decode
 # remove the '%' in the end of the password
 
-i5oRfSQ7gyxiYFHSPBocx1gzIsYpeaSj
+# Save minikube images
+minikube image save quay.io/ansible/awx:21.1.0 awx.tar
+# Load minikube images
+minikube image load awx.tar
