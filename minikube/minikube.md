@@ -34,13 +34,16 @@ kubectl logs -f deployments/awx-operator-controller-manager -c awx-manager
 kubectl get pods -l "app.kubernetes.io/managed-by=awx-operator"
 kubectl get svc -l "app.kubernetes.io/managed-by=awx-operator"
 
+<!-- export NAMESPACE=awx
+minikube service awx-demo-service --url -n $NAMESPACE -->
+
 kubectl port-forward service/awx-demo-service 8080:80 &> /dev/null &
 curl -L http://127.0.0.1:8080
 
 kubectl get secret awx-demo-admin-password -o jsonpath="{.data.password}" | base64 --decode
 # remove the '%' in the end of the password
 
-# List minikube images
+# List minikube images before AWX
 minikube image list
 ```
 ➜ minikube (main) ✗ minikube image ls
@@ -52,6 +55,29 @@ k8s.gcr.io/kube-apiserver:v1.23.3
 k8s.gcr.io/etcd:3.5.1-0
 k8s.gcr.io/coredns/coredns:v1.8.6
 gcr.io/k8s-minikube/storage-provisioner:v5
+docker.io/kubernetesui/metrics-scraper:v1.0.7
+docker.io/kubernetesui/dashboard:v2.3.1
+```
+# List minikube images after AWX
+```
+➜ ~ minikube image list
+quay.io/centos/centos:stream8
+quay.io/ansible/awx:21.1.0
+quay.io/ansible/awx-operator:0.22.0
+quay.io/ansible/awx-ee:latest
+k8s.gcr.io/pause:3.6
+k8s.gcr.io/kube-scheduler:v1.23.3
+k8s.gcr.io/kube-proxy:v1.23.3
+k8s.gcr.io/kube-controller-manager:v1.23.3
+k8s.gcr.io/kube-apiserver:v1.23.3
+k8s.gcr.io/ingress-nginx/kube-webhook-certgen:<none>
+k8s.gcr.io/ingress-nginx/controller:<none>
+k8s.gcr.io/etcd:3.5.1-0
+k8s.gcr.io/coredns/coredns:v1.8.6
+gcr.io/kubebuilder/kube-rbac-proxy:v0.8.0
+gcr.io/k8s-minikube/storage-provisioner:v5
+docker.io/library/redis:latest
+docker.io/library/postgres:12
 docker.io/kubernetesui/metrics-scraper:v1.0.7
 docker.io/kubernetesui/dashboard:v2.3.1
 ```
