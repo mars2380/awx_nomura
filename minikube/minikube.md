@@ -1,6 +1,6 @@
 https://github.com/ansible/awx-operator
 
-kubectl apply -f https://raw.githubusercontent.com/ansible/awx-operator/0.12.0/deploy/awx-operator.yaml
+<!-- kubectl apply -f https://raw.githubusercontent.com/ansible/awx-operator/0.12.0/deploy/awx-operator.yaml
 
 kubectl apply -f ./awx-operator.yaml
 kubectl apply -f ./ansible-awx.yml
@@ -15,16 +15,20 @@ ansible-awx-service   NodePort   10.97.206.89   <none>        80:32483/TCP   90m
 
 kubectl port-forward svc/ansible-awx-service --address 0.0.0.0 32483:80 &> /dev/null &
 open http://<minikube-ip>:<node-port>
-kubectl get secret ansible-awx-admin-password -o jsonpath="{.data.password}" | base64 --decode
+kubectl get secret ansible-awx-admin-password -o jsonpath="{.data.password}" | base64 --decode -->
 
 minikube stop
+minikube -p minikube delete
+minikube profile list
 minikube delete --purge
 minikube start --cpus=4 --memory=4g --addons=ingress
-minikube kubectl -- get nodes
+minikube kubectl -- get nodesopenssl x509 -in gitlab.cs.qm.crt -text -noout
+openssl x509 -in gitlab.crt -text -noout
 minikube kubectl -- get pods -A
 kustomize build . | kubectl apply -f -
 kubectl get pods -n awx
 kubectl config set-context --current --namespace=awx
+# uncommenet 'awx-demo.yaml'
 kustomize build . | kubectl apply -f -
 kubectl logs -f deployments/awx-operator-controller-manager -c awx-manager
 kubectl get pods -l "app.kubernetes.io/managed-by=awx-operator"
@@ -35,6 +39,22 @@ curl -L http://127.0.0.1:8080
 
 kubectl get secret awx-demo-admin-password -o jsonpath="{.data.password}" | base64 --decode
 # remove the '%' in the end of the password
+
+# List minikube images
+minikube image list
+```
+➜ minikube (main) ✗ minikube image ls
+k8s.gcr.io/pause:3.6
+k8s.gcr.io/kube-scheduler:v1.23.3
+k8s.gcr.io/kube-proxy:v1.23.3
+k8s.gcr.io/kube-controller-manager:v1.23.3
+k8s.gcr.io/kube-apiserver:v1.23.3
+k8s.gcr.io/etcd:3.5.1-0
+k8s.gcr.io/coredns/coredns:v1.8.6
+gcr.io/k8s-minikube/storage-provisioner:v5
+docker.io/kubernetesui/metrics-scraper:v1.0.7
+docker.io/kubernetesui/dashboard:v2.3.1
+```
 
 # Save minikube images
 minikube image save quay.io/ansible/awx:21.1.0 awx.tar
