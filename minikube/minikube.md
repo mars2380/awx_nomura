@@ -90,25 +90,48 @@ minikube image load awx.tar
 Spin up Redhat instance
 
 ```bash
-ssh -i "~/Downloads/adm.pem" ec2-user@ec2-13-40-118-182.eu-west-2.compute.amazonaws.com
+ssh -i "~/Downloads/adm.pem" ec2-user@ec2-18-133-65-63.eu-west-2.compute.amazonaws.com
 sudo -i
 
-yum update -y
-yum install nginx -y
-systemctl start nginx
-systemctl status nginx
-echo 'This is a test' > /usr/share/nginx/html/minikube/minikube.html
+sudo yum update -y
 
-yum install docker -y
+# sudo yum install nginx -y
+# sudo cp /etc/nginx/nginx.conf /etc/nginx/nginx.conf.bak
+# sudo sed -i '/^#/d' /etc/nginx/nginx.conf
+# # sudo sed -i "/location \/ {/a\    index not_a_file;\n    autoindex on;\n    types {}" /etc/nginx/nginx.conf
+# sudo sed -i "/location \/ {/\/location \minikube/ {    index not_a_file;\n    autoindex on;\n    types {}" /etc/nginx/nginx.conf
+# sudo nginx -t
+# sudo systemctl restart nginx
+# sudo systemctl status nginx
+# sudo echo 'This is a test' > /usr/share/nginx/html/minikube/minikube.html
 
-curl -LO https://storage.googleapis.com/minikube/releases/latest/minikube-linux-amd64
+
+sudo yum install -y vsftpd
+sudo -i sed -i 's/anonymous_enable=NO/anonymous_enable=YES/' /etc/vsftpd/vsftpd.conf
+sudo systemctl restart vsftpd.service
+sudo systemctl status vsftpd.service
+
+sudo yum install docker -y
+
+sudo curl -LO https://storage.googleapis.com/minikube/releases/latest/minikube-linux-amd64
 sudo install minikube-linux-amd64 /bin/minikube
 alias kubectl="minikube kubectl --"
-exit
 
 # minikube start --driver=docker
 minikube start --driver=podman
 sudo mkdir -p /usr/share/nginx/html/minikube/
 
-for i in $(minikube image list); do minikube image save $i $i.tar; done
+sudo rm -rf /usr/share/nginx/html/minikube/*
+for i in $(minikube image list); do
+  TAR=$(echo $i | awk -F '/' '{print $NF}' | sed s/://)
+  echo "Saving $TAR in progress...."
+  # echo "minikube image save $i $TAR.tar"
+  minikube image save $i $TAR
+  sudo mv -v $TAR /usr/share/nginx/html/minikube/
+done
+
+
+
+
+
 ```
