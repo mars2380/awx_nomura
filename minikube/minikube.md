@@ -22,8 +22,7 @@ minikube -p minikube delete
 minikube profile list
 minikube delete --purge
 minikube start --cpus=4 --memory=4g --addons=ingress
-minikube kubectl -- get nodesopenssl x509 -in gitlab.cs.qm.crt -text -noout
-openssl x509 -in gitlab.crt -text -noout
+minikube kubectl -- get nodes
 minikube kubectl -- get pods -A
 kustomize build . | kubectl apply -f -
 kubectl get pods -n awx
@@ -86,3 +85,30 @@ docker.io/kubernetesui/dashboard:v2.3.1
 minikube image save quay.io/ansible/awx:21.1.0 awx.tar
 # Load minikube images
 minikube image load awx.tar
+
+# WebServer
+Spin up Redhat instance
+
+```bash
+ssh -i "~/Downloads/adm.pem" ec2-user@ec2-13-40-118-182.eu-west-2.compute.amazonaws.com
+sudo -i
+
+yum update -y
+yum install nginx -y
+systemctl start nginx
+systemctl status nginx
+echo 'This is a test' > /usr/share/nginx/html/minikube/minikube.html
+
+yum install docker -y
+
+curl -LO https://storage.googleapis.com/minikube/releases/latest/minikube-linux-amd64
+sudo install minikube-linux-amd64 /bin/minikube
+alias kubectl="minikube kubectl --"
+exit
+
+# minikube start --driver=docker
+minikube start --driver=podman
+sudo mkdir -p /usr/share/nginx/html/minikube/
+
+for i in $(minikube image list); do minikube image save $i $i.tar; done
+```
