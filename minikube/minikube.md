@@ -21,12 +21,15 @@ minikube stop
 minikube -p minikube delete
 minikube profile list
 minikube delete --purge
-minikube start --cpus=4 --memory=4g --addons=ingress
+<!-- minikube start --cpus=4 --memory=4g --addons=ingress -->
+minikube start --addons=ingress
 minikube kubectl -- get nodes
 minikube kubectl -- get pods -A
+# create kustomization.yaml
 kustomize build . | kubectl apply -f -
 kubectl get pods -n awx
 kubectl config set-context --current --namespace=awx
+# create awx-demo.yaml
 # uncommenet 'awx-demo.yaml'
 kustomize build . | kubectl apply -f -
 kubectl logs -f deployments/awx-operator-controller-manager -c awx-manager
@@ -91,9 +94,11 @@ Spin up Redhat instance
 
 ```bash
 ssh -i "~/Downloads/adm.pem" ec2-user@ec2-18-133-65-63.eu-west-2.compute.amazonaws.com
-sudo -i
 
 sudo yum update -y
+sudo yum install httpd docker git -y
+sudo systemctl start httpd
+sudo systemctl status httpd
 
 # sudo yum install nginx -y
 # sudo cp /etc/nginx/nginx.conf /etc/nginx/nginx.conf.bak
@@ -105,33 +110,23 @@ sudo yum update -y
 # sudo systemctl status nginx
 # sudo echo 'This is a test' > /usr/share/nginx/html/minikube/minikube.html
 
-
-sudo yum install -y vsftpd
-sudo -i sed -i 's/anonymous_enable=NO/anonymous_enable=YES/' /etc/vsftpd/vsftpd.conf
-sudo systemctl restart vsftpd.service
-sudo systemctl status vsftpd.service
-
-sudo yum install docker -y
-
 sudo curl -LO https://storage.googleapis.com/minikube/releases/latest/minikube-linux-amd64
 sudo install minikube-linux-amd64 /bin/minikube
 alias kubectl="minikube kubectl --"
+curl -s "https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack/install_kustomize.sh"  | bash
+sudo cp kustomize /usr/local/bin/
 
 # minikube start --driver=docker
 minikube start --driver=podman
-sudo mkdir -p /usr/share/nginx/html/minikube/
 
-sudo rm -rf /usr/share/nginx/html/minikube/*
+# sudo mkdir -p /usr/share/nginx/html/minikube/
+sudo mkdir -p /var/www/html/minikube/
+
 for i in $(minikube image list); do
   TAR=$(echo $i | awk -F '/' '{print $NF}' | sed s/://)
   echo "Saving $TAR in progress...."
   # echo "minikube image save $i $TAR.tar"
   minikube image save $i $TAR
-  sudo mv -v $TAR /usr/share/nginx/html/minikube/
+  sudo cp -v $TAR /var/www/html/minikube/
 done
-
-
-
-
-
 ```
