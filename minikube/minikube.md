@@ -93,7 +93,7 @@ minikube image load awx.tar
 Spin up Redhat instance
 
 ```bash
-export HOST=ec2-18-133-65-63.eu-west-2.compute.amazonaws.com
+export HOST=ec2-3-8-86-232.eu-west-2.compute.amazonaws.com
 
 scp -v -i "~/Downloads/adm.pem" *.yaml ec2-user@$HOST:
 ssh -i "~/Downloads/adm.pem" ec2-user@$HOST
@@ -102,16 +102,6 @@ sudo yum update -y
 sudo yum install httpd docker git -y
 sudo systemctl start httpd
 sudo systemctl status httpd
-
-# sudo yum install nginx -y
-# sudo cp /etc/nginx/nginx.conf /etc/nginx/nginx.conf.bak
-# sudo sed -i '/^#/d' /etc/nginx/nginx.conf
-# # sudo sed -i "/location \/ {/a\    index not_a_file;\n    autoindex on;\n    types {}" /etc/nginx/nginx.conf
-# sudo sed -i "/location \/ {/\/location \minikube/ {    index not_a_file;\n    autoindex on;\n    types {}" /etc/nginx/nginx.conf
-# sudo nginx -t
-# sudo systemctl restart nginx
-# sudo systemctl status nginx
-# sudo echo 'This is a test' > /usr/share/nginx/html/minikube/minikube.html
 
 sudo curl -LO https://storage.googleapis.com/minikube/releases/latest/minikube-linux-amd64
 sudo install minikube-linux-amd64 /bin/minikube
