@@ -93,10 +93,11 @@ minikube image load awx.tar
 Spin up Redhat instance
 
 ```bash
-export HOST=ec2-3-8-86-232.eu-west-2.compute.amazonaws.com
+export HOST=ec2-3-8-95-44.eu-west-2.compute.amazonaws.com
+open http://$HOST/minikube
 
-scp -v -i "~/Downloads/adm.pem" *.yaml ec2-user@$HOST:
-ssh -i "~/Downloads/adm.pem" ec2-user@$HOST
+scp -v -i "../adm.pem" *.yaml ec2-user@$HOST:
+ssh -i "../adm.pem" ec2-user@$HOST
 
 sudo yum update -y
 sudo yum install httpd docker git tmux -y
@@ -115,11 +116,15 @@ sudo cp kustomize /usr/local/bin/
 minikube start --addons=ingress
 minikube kubectl -- get nodes
 minikube kubectl -- get pods -A
-# create kustomization.yaml
+
+ll kustomization.yaml
+
 kustomize build . | kubectl apply -f -
 kubectl get pods -n awx
 kubectl config set-context --current --namespace=awx
-# create awx-demo.yaml
+
+ll awx-demo.yaml
+
 sed 's/# - awx-demo.yaml/- awx-demo.yaml/' kustomization.yaml > kustomization_node.yaml
 mv -v kustomization_node.yaml kustomization.yaml
 kustomize build . | kubectl apply -f -
@@ -130,13 +135,7 @@ kubectl get pods -l "app.kubernetes.io/managed-by=awx-operator" -w
 
 sudo mkdir -p /var/www/html/minikube/
 
-screen -dmS minikube bash -c 'for i in $(minikube image list); do
-  TAR=$(echo $i | awk -F '/' '{print $NF}' | sed s/://)
-  echo "Saving $TAR in progress...."
-  # echo "minikube image save $i $TAR.tar"
-  minikube image save $i $TAR
-  sudo cp -v $TAR /var/www/html/minikube/
-done'
+tmux
 
 for i in $(minikube image list); do
   TAR=$(echo $i | awk -F '/' '{print $NF}' | sed s/://)
@@ -144,5 +143,17 @@ for i in $(minikube image list); do
   # echo "minikube image save $i $TAR.tar"
   minikube image save $i $TAR
   sudo cp -v $TAR /var/www/html/minikube/
+  echo "wget http://$HOST/minikube/$TAR" | sudo tee -a /var/www/html/minikube/wget_list.txt
+  echo "minikube image load $TAR.tar" | sudo tee -a /var/www/html/minikube/wget_list.txt
+done
+
+for i in $(minikube image list); do
+  TAR=$(echo $i | awk -F '/' '{print $NF}')
+  echo "Saving $TAR in progress...."
+  # echo "minikube image save $i $TAR.tar"
+  minikube image save $i $TAR
+  sudo cp -v $TAR /var/www/html/minikube/
+  echo "wget http://$HOST/minikube/$TAR" | sudo tee -a /var/www/html/minikube/wget_list.txt
+  echo "minikube image load $TAR.tar" | sudo tee -a /var/www/html/minikube/wget_list.txt
 done
 ```
