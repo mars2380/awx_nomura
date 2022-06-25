@@ -99,7 +99,7 @@ scp -v -i "~/Downloads/adm.pem" *.yaml ec2-user@$HOST:
 ssh -i "~/Downloads/adm.pem" ec2-user@$HOST
 
 sudo yum update -y
-sudo yum install httpd docker git -y
+sudo yum install httpd docker git tmux -y
 sudo systemctl start httpd
 sudo systemctl status httpd
 
@@ -124,11 +124,19 @@ sed 's/# - awx-demo.yaml/- awx-demo.yaml/' kustomization.yaml > kustomization_no
 mv -v kustomization_node.yaml kustomization.yaml
 kustomize build . | kubectl apply -f -
 kubectl logs -f deployments/awx-operator-controller-manager -c awx-manager
-kubectl get pods -l "app.kubernetes.io/managed-by=awx-operator"
-kubectl get svc -l "app.kubernetes.io/managed-by=awx-operator"
 
-# sudo mkdir -p /usr/share/nginx/html/minikube/
+kubectl get svc -l "app.kubernetes.io/managed-by=awx-operator"
+kubectl get pods -l "app.kubernetes.io/managed-by=awx-operator" -w
+
 sudo mkdir -p /var/www/html/minikube/
+
+screen -dmS minikube bash -c 'for i in $(minikube image list); do
+  TAR=$(echo $i | awk -F '/' '{print $NF}' | sed s/://)
+  echo "Saving $TAR in progress...."
+  # echo "minikube image save $i $TAR.tar"
+  minikube image save $i $TAR
+  sudo cp -v $TAR /var/www/html/minikube/
+done'
 
 for i in $(minikube image list); do
   TAR=$(echo $i | awk -F '/' '{print $NF}' | sed s/://)
