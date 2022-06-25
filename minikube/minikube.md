@@ -93,7 +93,10 @@ minikube image load awx.tar
 Spin up Redhat instance
 
 ```bash
-ssh -i "~/Downloads/adm.pem" ec2-user@ec2-18-133-65-63.eu-west-2.compute.amazonaws.com
+export HOST=ec2-18-133-65-63.eu-west-2.compute.amazonaws.com
+
+scp -v -i "~/Downloads/adm.pem" *.yaml ec2-user@$HOST:
+ssh -i "~/Downloads/adm.pem" ec2-user@$HOST
 
 sudo yum update -y
 sudo yum install httpd docker git -y
@@ -117,7 +120,22 @@ curl -s "https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack
 sudo cp kustomize /usr/local/bin/
 
 # minikube start --driver=docker
-minikube start --driver=podman
+# minikube start --driver=podman
+
+minikube start --addons=ingress
+minikube kubectl -- get nodes
+minikube kubectl -- get pods -A
+# create kustomization.yaml
+kustomize build . | kubectl apply -f -
+kubectl get pods -n awx
+kubectl config set-context --current --namespace=awx
+# create awx-demo.yaml
+sed 's/# - awx-demo.yaml/- awx-demo.yaml/' kustomization.yaml > kustomization_node.yaml
+mv -v kustomization_node.yaml kustomization.yaml
+kustomize build . | kubectl apply -f -
+kubectl logs -f deployments/awx-operator-controller-manager -c awx-manager
+kubectl get pods -l "app.kubernetes.io/managed-by=awx-operator"
+kubectl get svc -l "app.kubernetes.io/managed-by=awx-operator"
 
 # sudo mkdir -p /usr/share/nginx/html/minikube/
 sudo mkdir -p /var/www/html/minikube/
