@@ -153,7 +153,7 @@ echo $HOST
 for i in $(minikube image list); do
   TAR=$(echo $i | awk -F '/' '{print $NF}' | sed 's/:/_/g;s/\./-/g')
   echo "Saving $TAR in progress...."
-  echo "wget http://$HOST/minikube/$TAR" | sudo tee -a /var/www/html/minikube/wget_list.txt
+  echo "wget http://$HOST/minikube/$TAR.tar" | sudo tee -a /var/www/html/minikube/wget_list.txt
   echo "minikube image load $TAR.tar" | sudo tee -a /var/www/html/minikube/wget_list.txt
 done
 
