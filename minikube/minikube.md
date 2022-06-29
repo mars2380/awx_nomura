@@ -93,7 +93,7 @@ minikube image load awx.tar
 Spin up Redhat instance
 
 ```bash
-export HOST=ec2-3-8-95-44.eu-west-2.compute.amazonaws.com
+export HOST=13.40.49.131
 open http://$HOST/minikube
 
 scp -v -i "../adm.pem" *.yaml ec2-user@$HOST:
@@ -138,29 +138,29 @@ sudo mkdir -p /var/www/html/minikube/
 tmux
 
 for i in $(minikube image list); do
-  TAR=$(echo $i | awk -F '/' '{print $NF}' | sed s/://)
+  TAR=$(echo $i | awk -F '/' '{print $NF}' | sed 's/:/_/g;s/\./-/g')
   echo "Saving $TAR in progress...."
   # echo "minikube image save $i $TAR.tar"
-  minikube image save $i $TAR
-  sudo cp -v $TAR /var/www/html/minikube/
+  minikube image save $i $TAR.tar
+  sudo cp -v $TAR.tar /var/www/html/minikube/
+done
+
+TOKEN=`curl -X PUT "http://169.254.169.254/latest/api/token" -H "X-aws-ec2-metadata-token-ttl-seconds: 21600"` \
+export HOST=`curl -H "X-aws-ec2-metadata-token: $TOKEN" -v http://169.254.169.254/latest/meta-data/public-ipv4`
+
+echo $HOST
+
+for i in $(minikube image list); do
+  TAR=$(echo $i | awk -F '/' '{print $NF}' | sed 's/:/_/g;s/\./-/g')
+  echo "Saving $TAR in progress...."
   echo "wget http://$HOST/minikube/$TAR" | sudo tee -a /var/www/html/minikube/wget_list.txt
   echo "minikube image load $TAR.tar" | sudo tee -a /var/www/html/minikube/wget_list.txt
 done
 
 for i in $(minikube image list); do
-  TAR=$(echo $i | awk -F '/' '{print $NF}')
-  echo "Saving $TAR in progress...."
-  # echo "minikube image save $i $TAR.tar"
-  minikube image save $i $TAR.tar
-  sudo cp -v $TAR.tar /var/www/html/minikube/
-  echo "wget http://$HOST/minikube/$TAR.tar" | sudo tee -a /var/www/html/minikube/wget_list.txt
-  echo "minikube image load $TAR.tar" | sudo tee -a /var/www/html/minikube/wget_list.txt
-done
-
-for i in $(cat list.txt); do
   TAR=$(echo $i | awk -F '/' '{print $NF}' | sed 's/:/_/g;s/\./-/g')
   echo "Saving $TAR in progress...."
-  UNTAR=$(echo $TAR | sed 's/_/:/g;s/-/./g')
-  echo "Loading image $UNTAR"
+  # UNTAR=$(echo $TAR | sed 's/_/:/g;s/-/./g')
+  # echo "Loading image $UNTAR"
 done
 ```
