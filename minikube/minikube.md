@@ -93,7 +93,7 @@ minikube image load awx.tar
 Spin up Redhat instance
 
 ```bash
-export HOST=13.40.49.131
+export HOST=13.40.163.216
 open http://$HOST/minikube
 
 scp -v -i "../adm.pem" *.yaml ec2-user@$HOST:
@@ -101,6 +101,7 @@ ssh -i "../adm.pem" ec2-user@$HOST
 
 sudo yum update -y
 sudo yum install httpd docker git tmux -y
+sudo systemctl enable httpd
 sudo systemctl start httpd
 sudo systemctl status httpd
 
@@ -149,11 +150,17 @@ TOKEN=`curl -X PUT "http://169.254.169.254/latest/api/token" -H "X-aws-ec2-metad
 export HOST=`curl -H "X-aws-ec2-metadata-token: $TOKEN" -v http://169.254.169.254/latest/meta-data/public-ipv4`
 
 echo $HOST
+echo | sudo tee /var/www/html/minikube/wget_list.txt
 
 for i in $(minikube image list); do
   TAR=$(echo $i | awk -F '/' '{print $NF}' | sed 's/:/_/g;s/\./-/g')
   echo "Saving $TAR in progress...."
   echo "wget http://$HOST/minikube/$TAR.tar" | sudo tee -a /var/www/html/minikube/wget_list.txt
+done
+
+for i in $(minikube image list); do
+  TAR=$(echo $i | awk -F '/' '{print $NF}' | sed 's/:/_/g;s/\./-/g')
+  echo "Saving $TAR in progress...."
   echo "minikube image load $TAR.tar" | sudo tee -a /var/www/html/minikube/wget_list.txt
 done
 
@@ -163,4 +170,11 @@ for i in $(minikube image list); do
   # UNTAR=$(echo $TAR | sed 's/_/:/g;s/-/./g')
   # echo "Loading image $UNTAR"
 done
-```
+
+# Install Kustomize by pulling docker images.
+docker pull k8s.gcr.io/kustomize/kustomize:v3.8.7
+docker run k8s.gcr.io/kustomize/kustomize:v3.8.7 version
+docker image save k8s.gcr.io/kustomize/kustomize:v3.8.7 -o kustomize_v3-8-7.tar
+sudo cp -v kustomize_v3-8-7.tar /var/www/html/minikube/
+echo "wget http://$HOST/minikube/kustomize_v3-8-7.tar" | sudo tee -a /var/www/html/minikube/wget_list.txt
+echo "docker image load -i kustomize_v3-8-7.tar" | sudo tee -a /var/www/html/minikube/wget_list.txt
