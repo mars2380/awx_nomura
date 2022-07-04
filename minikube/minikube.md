@@ -77,7 +77,7 @@ docker.io/kubernetesui/dashboard:v2.3.1
 Spin up Redhat instance
 
 ```bash
-export HOST=ec2-18-134-11-9.eu-west-2.compute.amazonaws.com
+export HOST=18.132.243.171
 open http://$HOST/minikube
 
 scp -v -i "../adm.pem" *.yaml ec2-user@$HOST:
@@ -119,8 +119,9 @@ kubectl get svc -l "app.kubernetes.io/managed-by=awx-operator"
 kubectl get pods -l "app.kubernetes.io/managed-by=awx-operator" -w
 
 sudo mkdir -p /var/www/html/minikube/
-sudo cp -v /usr/local/bin/kustomize /var/www/html/minikube/
-echo "wget http://$HOST/minikube/kustomize" | sudo tee -a /var/www/html/minikube/wget_list.txt
+# sudo cp -v /usr/local/bin/kustomize /var/www/html/minikube/
+sudo cp /usr/local/bin/kustomize .
+sudo tar czvf /var/www/html/minikube/kustomize.tar kustomize
 
 tmux
 # detached
@@ -145,6 +146,8 @@ export HOST=`curl -H "X-aws-ec2-metadata-token: $TOKEN" -v http://169.254.169.25
 
 echo $HOST
 echo | sudo tee /var/www/html/minikube/wget_list.txt
+
+echo "wget http://$HOST/minikube/kustomize" | sudo tee -a /var/www/html/minikube/wget_list.txt
 
 for i in $(minikube image list); do
   TAR=$(echo $i | awk -F '/' '{print $NF}' | sed 's/:/_/g;s/\./-/g')
