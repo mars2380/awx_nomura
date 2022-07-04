@@ -120,7 +120,7 @@ kubectl get pods -l "app.kubernetes.io/managed-by=awx-operator" -w
 
 sudo mkdir -p /var/www/html/minikube/
 # sudo cp -v /usr/local/bin/kustomize /var/www/html/minikube/
-sudo cp /usr/local/bin/kustomize .
+# sudo cp /usr/local/bin/kustomize .
 sudo tar czvf /var/www/html/minikube/kustomize.tar kustomize
 
 tmux
@@ -147,7 +147,8 @@ export HOST=`curl -H "X-aws-ec2-metadata-token: $TOKEN" -v http://169.254.169.25
 echo $HOST
 echo | sudo tee /var/www/html/minikube/wget_list.txt
 
-echo "wget http://$HOST/minikube/kustomize" | sudo tee -a /var/www/html/minikube/wget_list.txt
+echo "wget http://$HOST/minikube/kustomize.tar" | sudo tee -a /var/www/html/minikube/wget_list.txt
+echo "tar xzvf kustomize.tar && cp kustomize /usr/local/bin/kustomize" | sudo tee -a /var/www/html/minikube/wget_list.txt
 
 for i in $(minikube image list); do
   TAR=$(echo $i | awk -F '/' '{print $NF}' | sed 's/:/_/g;s/\./-/g')
