@@ -188,4 +188,11 @@ docker exec kustomize kustomize
 
 docker pull k8s.gcr.io/kustomize/kustomize:v3.8.7
 docker run k8s.gcr.io/kustomize/kustomize:v3.8.7 version
+
+# Set Global variables
+cat > /etc/environment << EOL
+export https_proxy=http://applicationwebproxy.nomura.com:8080
+export http_proxy=http://applicationwebproxy.nomura.com:8080
+export no_proxy=localhost,127.0.0.1,192.168.99.0/24,192.168.39.0/24,10.96.0.0/12,container-registry.nomura.com
+EOL
 ```
