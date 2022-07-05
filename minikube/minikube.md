@@ -20,15 +20,10 @@ kubectl logs -f deployments/awx-operator-controller-manager -c awx-manager
 kubectl get pods -l "app.kubernetes.io/managed-by=awx-operator"
 kubectl get svc -l "app.kubernetes.io/managed-by=awx-operator"
 
-<<<<<<< HEAD
-<!-- export NAMESPACE=awx
-minikube service awx-demo-service --url -n $NAMESPACE -->
 
-=======
 export NAMESPACE=awx
 minikube service awx-demo-service --url -n $NAMESPACE
 <!-- nohup minikube tunnel & -->
->>>>>>> 9b675bebb0e04759d2518f1d6778ddb674ebfb7f
 kubectl port-forward service/awx-demo-service 8080:80 &> /dev/null &
 curl -L http://127.0.0.1:8080
 
@@ -83,11 +78,7 @@ docker.io/kubernetesui/dashboard:v2.3.1
 Spin up Redhat instance
 
 ```bash
-<<<<<<< HEAD
 export HOST=13.40.163.216
-=======
-export HOST=18.132.243.171
->>>>>>> 9b675bebb0e04759d2518f1d6778ddb674ebfb7f
 open http://$HOST/minikube
 
 scp -v -i "../adm.pem" *.yaml ec2-user@$HOST:
@@ -205,8 +196,4 @@ export https_proxy=http://applicationwebproxy.nomura.com:8080
 export http_proxy=http://applicationwebproxy.nomura.com:8080
 export no_proxy=localhost,127.0.0.1,192.168.99.0/24,192.168.39.0/24,10.96.0.0/12,container-registry.nomura.com
 EOL
-<<<<<<< HEAD
 ```
-=======
-```
->>>>>>> 9b675bebb0e04759d2518f1d6778ddb674ebfb7f
