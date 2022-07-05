@@ -1,22 +1,6 @@
 https://github.com/ansible/awx-operator
 
-<!-- kubectl apply -f https://raw.githubusercontent.com/ansible/awx-operator/0.12.0/deploy/awx-operator.yaml
-
-kubectl apply -f ./awx-operator.yaml
-kubectl apply -f ./ansible-awx.yml
-kubectl logs -f deployment/awx-operator
-kubectl get pods -l "app.kubernetes.io/managed-by=awx-operator"
-kubectl get svc -l "app.kubernetes.io/managed-by=awx-operator"
-
-devops@linuxtechi:~$ nohup minikube tunnel &
-devops@linuxtechi:~$ kubectl get svc ansible-awx-service
-NAME                  TYPE       CLUSTER-IP     EXTERNAL-IP   PORT(S)        AGE
-ansible-awx-service   NodePort   10.97.206.89   <none>        80:32483/TCP   90m
-
-kubectl port-forward svc/ansible-awx-service --address 0.0.0.0 32483:80 &> /dev/null &
-open http://<minikube-ip>:<node-port>
-kubectl get secret ansible-awx-admin-password -o jsonpath="{.data.password}" | base64 --decode -->
-
+# Install AWX on Mac
 minikube stop
 minikube -p minikube delete
 minikube profile list
@@ -85,9 +69,9 @@ docker.io/kubernetesui/dashboard:v2.3.1
 ```
 
 # Save minikube images
-minikube image save quay.io/ansible/awx:21.1.0 awx.tar
+`minikube image save quay.io/ansible/awx:21.1.0 awx.tar`
 # Load minikube images
-minikube image load awx.tar
+`minikube image load awx.tar`
 
 # WebServer
 Spin up Redhat instance
@@ -135,8 +119,19 @@ kubectl get svc -l "app.kubernetes.io/managed-by=awx-operator"
 kubectl get pods -l "app.kubernetes.io/managed-by=awx-operator" -w
 
 sudo mkdir -p /var/www/html/minikube/
+# sudo cp -v /usr/local/bin/kustomize /var/www/html/minikube/
+# sudo cp /usr/local/bin/kustomize .
+sudo tar czvf /var/www/html/minikube/kustomize.tar kustomize
 
 tmux
+# detached
+"ctrl + b + d"
+tmux detach
+# atached
+"ctrl + b + a"
+"tmux attach -t 0"
+# List sessions
+"tmux ls"
 
 for i in $(minikube image list); do
   TAR=$(echo $i | awk -F '/' '{print $NF}' | sed 's/:/_/g;s/\./-/g')
@@ -151,6 +146,9 @@ export HOST=`curl -H "X-aws-ec2-metadata-token: $TOKEN" -v http://169.254.169.25
 
 echo $HOST
 echo | sudo tee /var/www/html/minikube/wget_list.txt
+
+echo "wget http://$HOST/minikube/kustomize.tar" | sudo tee -a /var/www/html/minikube/wget_list.txt
+echo "tar xzvf kustomize.tar && cp kustomize /usr/local/bin/kustomize" | sudo tee -a /var/www/html/minikube/wget_list.txt
 
 for i in $(minikube image list); do
   TAR=$(echo $i | awk -F '/' '{print $NF}' | sed 's/:/_/g;s/\./-/g')
@@ -178,3 +176,23 @@ docker image save k8s.gcr.io/kustomize/kustomize:v3.8.7 -o kustomize_v3-8-7.tar
 sudo cp -v kustomize_v3-8-7.tar /var/www/html/minikube/
 echo "wget http://$HOST/minikube/kustomize_v3-8-7.tar" | sudo tee -a /var/www/html/minikube/wget_list.txt
 echo "docker image load -i kustomize_v3-8-7.tar" | sudo tee -a /var/www/html/minikube/wget_list.txt
+
+docker run -d --name kustomize ubuntu sleep 3600
+docker exec -it kustomize bash
+  apt update && \
+  apt install curl -y && \
+  curl -s "https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack/install_kustomize.sh"  | bash && \
+  cp -v kustomize /bin && \
+  kustomize version
+docker exec kustomize kustomize
+
+docker pull k8s.gcr.io/kustomize/kustomize:v3.8.7
+docker run k8s.gcr.io/kustomize/kustomize:v3.8.7 version
+
+# Set Global variables
+cat > /etc/environment << EOL
+export https_proxy=http://applicationwebproxy.nomura.com:8080
+export http_proxy=http://applicationwebproxy.nomura.com:8080
+export no_proxy=localhost,127.0.0.1,192.168.99.0/24,192.168.39.0/24,10.96.0.0/12,container-registry.nomura.com
+EOL
+```
