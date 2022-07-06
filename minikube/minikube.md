@@ -203,4 +203,5 @@ cp -vr /var/lib/docker/* /local/default/var_lib_docker/
 cd /var/lib/
 mv docker docker.bak
 ln -s /local/default/var_lib_docker/ docker
+systemctl restart docker
 ```
