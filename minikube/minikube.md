@@ -196,4 +196,8 @@ export https_proxy=http://applicationwebproxy.nomura.com:8080
 export http_proxy=http://applicationwebproxy.nomura.com:8080
 export no_proxy=localhost,127.0.0.1,192.168.99.0/24,192.168.39.0/24,10.96.0.0/12,container-registry.nomura.com
 EOL
+
+# Point /var docjker subfolder to a different place
+mkdir -p /local/default/var_lib_docker/
+cp -vr /var/lib/docker/* /local/default/var_lib_docker/
 ```
