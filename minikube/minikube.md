@@ -200,4 +200,7 @@ EOL
 # Point /var docjker subfolder to a different place
 mkdir -p /local/default/var_lib_docker/
 cp -vr /var/lib/docker/* /local/default/var_lib_docker/
+cd /var/lib/
+mv docker docker.bak
+ln -s /local/default/var_lib_docker/ docker
 ```
